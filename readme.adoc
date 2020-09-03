@@ -2,6 +2,8 @@
 
 This repository contains the sample code for my talk "A Deep Dive into Spring Application Events".
 
+image::https://github.com/odrotbohm/spring-events-deep-dive/workflows/Java%20CI%20with%20Maven/badge.svg[Build status]
+
 The code base is organized following the three major parts of the talk
 
 . **Fundamentals** (`….fundamentals`) -- contains samples of the fundamental API building blocks like `ApplicationEventPublisher`, `ApplicationListener`, `@EventListener`.
@@ -14,5 +16,6 @@ WARNING: Parts of this code are currently based on prototypical implementations 
 
 == Resources
 
+* Slide deck -- https://speakerdeck.com/olivergierke/a-deep-dive-into-spring-application-events
 * Moduliths -- https://github.com/odrotbohm/moduliths
 * Spring Domain Events -- https://github.com/odrotbohm/spring-domain-events
