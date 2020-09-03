@@ -1,0 +1,276 @@
+= Demo
+:toc: 
+
+[[fundamentals]]
+== Fundamentals
+
+=== Successful execution
+
+* Execute `publishesEventOnCompletion()`.
+
+[source]
+----
+… o.s.a.i.CustomizableTraceInterceptor     : Entering completeOrder(example.spring.events.a.fundamentals.quickstart.Order@84cd6c00). <1>
+2020-09-02 17:16:39.550  INFO 3812 --- [           main] e.a.f.q.OrderListeners$AnnotatedListener : Received example.spring.events.a.fundamentals.quickstart.OrderManagement$SomeOtherEvent@6736f40f. <2>
+… e.s.e.a.f.quickstart.OrderManagement     : Completing order example.spring.events.a.fundamentals.quickstart.Order@dcf3ded4. <3>
+… e.a.f.q.OrderListeners$AnnotatedListener : Received example.spring.events.a.fundamentals.quickstart.OrderManagement$OrderCompleted[source=example.spring.events.a.fundamentals.quickstart.Order@dcf3ded4]. <4>
+… .f.q.OrderListeners$ImplementingListener : Received example.spring.events.a.fundamentals.quickstart.OrderManagement$OrderCompleted[source=example.spring.events.a.fundamentals.quickstart.Order@dcf3ded4].
+… o.s.a.i.CustomizableTraceInterceptor     : Leaving completeOrder(..) with return value void, took 14ms. <5>
+----
+<1> Business method entered.
+<2> Some event triggered.
+<3> Business logic executed.
+<4> Other events triggered synchronously.
+<5> Business method completed.
+
+=== Exception during execution
+
+[source]
+----
+… o.s.a.i.CustomizableTraceInterceptor     : Entering completeOrder(example.spring.events.a.fundamentals.quickstart.Order@2704def5). <1>
+… e.a.f.q.OrderListeners$AnnotatedListener : Received example.spring.events.a.fundamentals.quickstart.OrderManagement$SomeOtherEvent@63a7781. <2>
+… e.s.e.a.f.quickstart.OrderManagement     : Completing order example.spring.events.a.fundamentals.quickstart.Order@6fe97296. <3>
+… o.s.a.i.CustomizableTraceInterceptor     : Exception thrown in method 'completeOrder' of class [example.spring.events.a.fundamentals.quickstart.OrderManagement] <4> 
+----
+<1> Business method entered.
+<2> Some event triggered.
+<3> Exception interrupts method execution.
+<4> Business method completes with exception. No further events triggered. 
+
+[[transactions]]
+== Transactional event listeners
+
+=== Successful service execution (Part I -- transaction commits)
+
+* Execute `publishesEventOnCompletion()`.
+
+[source]
+----
+… s.e.c.t.OrderListeners$AnnotatedListener : Received Order.OrderCompleted(order=Order(super=Aggregate(id=9fc54082-b57f-44d7-8659-87ab1acc4ca2, isNew=false), status=COMPLETED)). <1>
+… OrderListeners$ConfigurableEventListener : Received Order.OrderCompleted(order=Order(super=Aggregate(id=3b40af63-d691-40ac-b1d7-58110cadd59b, isNew=false), status=COMPLETED)).
+… derListeners$ConfigurableTxEventListener : Received Order.OrderCompleted(order=Order(super=Aggregate(id=9fc54082-b57f-44d7-8659-87ab1acc4ca2, isNew=false), status=COMPLETED)). <2>
+… c.t.OrderListeners$TransactionalListener : Received Order.OrderCompleted(order=Order(super=Aggregate(id=9fc54082-b57f-44d7-8659-87ab1acc4ca2, isNew=false), status=COMPLETED)).
+----
+<1> Standard `@EventListener` fired.
+<2> ``@TransactionalEventListener``s fired.
+
+=== Successful service execution (Part II -- transaction commits)
+
+* Enable transaction logging in `application.properties`.
+* Execute `publishesEventOnCompletion()`.
+
+[source]
+----
+… o.s.orm.jpa.JpaTransactionManager        : Creating new transaction with name [example.spring.events.c.transactions.OrderManagement.completeOrder]: PROPAGATION_REQUIRED,ISOLATION_DEFAULT
+…
+… o.s.orm.jpa.JpaTransactionManager        : Participating in existing transaction
+… s.e.c.t.OrderListeners$AnnotatedListener : Received Order.OrderCompleted(order=Order(super=Aggregate(id=eb407a82-51c8-4f7a-91aa-ede4885dc587, isNew=false), status=COMPLETED)). <1>
+… OrderListeners$ConfigurableEventListener : Received Order.OrderCompleted(order=Order(super=Aggregate(id=3b40af63-d691-40ac-b1d7-58110cadd59b, isNew=false), status=COMPLETED)).
+… o.s.orm.jpa.JpaTransactionManager        : Triggering beforeCommit synchronization
+… o.s.orm.jpa.JpaTransactionManager        : Triggering beforeCompletion synchronization
+… o.s.orm.jpa.JpaTransactionManager        : Initiating transaction commit <2>
+… o.s.orm.jpa.JpaTransactionManager        : Committing JPA transaction on EntityManager [SessionImpl(820117866<open>)]
+… o.s.orm.jpa.JpaTransactionManager        : Triggering afterCommit synchronization
+… o.s.orm.jpa.JpaTransactionManager        : Triggering afterCompletion synchronization
+… derListeners$ConfigurableTxEventListener : Received Order.OrderCompleted(order=Order(super=Aggregate(id=eb407a82-51c8-4f7a-91aa-ede4885dc587, isNew=false), status=COMPLETED)). <3>
+… c.t.OrderListeners$TransactionalListener : Received Order.OrderCompleted(order=Order(super=Aggregate(id=eb407a82-51c8-4f7a-91aa-ede4885dc587, isNew=false), status=COMPLETED)). <3>
+----
+<1> Standard `@EventListener` fired.
+<2> Transaction commits.
+<3> ``@TransactionalEventListener``s fired as part of the transaction's after completion callback.
+
+=== Failed service invocation (transaction rollback)
+
+* Execute `doesNotInvokeTransactionalEventListenerOnError()`.
+
+[source]
+----
+… o.s.orm.jpa.JpaTransactionManager        : Creating new transaction with name [example.spring.events.c.transactions.OrderManagement.failToCompleteOrder]: PROPAGATION_REQUIRED,ISOLATION_DEFAULT
+…
+… o.s.orm.jpa.JpaTransactionManager        : Participating in existi bng transaction
+… s.e.c.t.OrderListeners$AnnotatedListener : Received Order.OrderCompleted(order=Order(super=Aggregate(id=2406a312-a87e-4328-8ca4-4ef2a89e8518, isNew=false), status=COMPLETED)). <1>
+… OrderListeners$ConfigurableEventListener : Received Order.OrderCompleted(order=Order(super=Aggregate(id=3b40af63-d691-40ac-b1d7-58110cadd59b, isNew=false), status=COMPLETED)).
+… o.s.orm.jpa.JpaTransactionManager        : Triggering beforeCompletion synchronization
+… o.s.orm.jpa.JpaTransactionManager        : Initiating transaction rollback <2>
+… o.s.orm.jpa.JpaTransactionManager        : Rolling back JPA transaction on EntityManager [SessionImpl(1124773518<open>)]
+… o.s.orm.jpa.JpaTransactionManager        : Triggering afterCompletion synchronization <3>
+… o.s.orm.jpa.JpaTransactionManager        : Closing JPA EntityManager [SessionImpl(1124773518<open>)] after transaction
+----
+<1> Standard ``@EventListener``s fired.
+<2> Transaction rollback triggered.
+<3> No transactional event listeners triggered.
+
+=== Failing event listener
+
+* Execute `eventListenerCanBreakTransaction()`.
+
+[source]
+----
+… o.s.orm.jpa.JpaTransactionManager        : Creating new transaction with name [example.spring.events.c.transactions.OrderManagement.completeOrder]: PROPAGATION_REQUIRED,ISOLATION_DEFAULT
+…
+… o.s.orm.jpa.JpaTransactionManager        : Participating in existing transaction
+… s.e.c.t.OrderListeners$AnnotatedListener : Received Order.OrderCompleted(order=Order(super=Aggregate(id=deeaacea-88b5-438f-9575-df18b4c9fe3b, isNew=false), status=COMPLETED)).
+… OrderListeners$ConfigurableEventListener : Received Order.OrderCompleted(order=Order(super=Aggregate(id=deeaacea-88b5-438f-9575-df18b4c9fe3b, isNew=false), status=COMPLETED)). <1>
+… o.s.orm.jpa.JpaTransactionManager        : Participating transaction failed - marking existing transaction as rollback-only <2>
+…
+… o.s.orm.jpa.JpaTransactionManager        : Triggering beforeCompletion synchronization
+… o.s.orm.jpa.JpaTransactionManager        : Initiating transaction rollback
+… o.s.orm.jpa.JpaTransactionManager        : Rolling back JPA transaction on EntityManager [SessionImpl(457727115<open>)]
+… o.s.orm.jpa.JpaTransactionManager        : Triggering afterCompletion synchronization
+… o.s.orm.jpa.JpaTransactionManager        : Closing JPA EntityManager [SessionImpl(457727115<open>)] after transaction
+----
+<1> `AnnotatedListener` completes successfully.
+<2> `ConfigurableEventListener` fails and causes transaction rollback.
+
+=== Failing transactional event listener
+
+* Execute `registersEventPublicationInCaseOfListenerFailure()`.
+
+[source]
+----
+… o.s.orm.jpa.JpaTransactionManager        : Creating new transaction with name [example.spring.events.c.transactions.OrderManagement.completeOrder]: PROPAGATION_REQUIRED,ISOLATION_DEFAULT
+…
+… o.s.orm.jpa.JpaTransactionManager        : Participating in existing transaction
+… s.e.c.t.OrderListeners$AnnotatedListener : Received Order.OrderCompleted(order=Order(super=Aggregate(id=28985ff2-1218-48f3-8386-8e8a72536feb, isNew=false), status=COMPLETED)). <1>
+… OrderListeners$ConfigurableEventListener : Received Order.OrderCompleted(order=Order(super=Aggregate(id=3b40af63-d691-40ac-b1d7-58110cadd59b, isNew=false), status=COMPLETED)).
+… o.s.orm.jpa.JpaTransactionManager        : Triggering beforeCommit synchronization
+… o.s.orm.jpa.JpaTransactionManager        : Triggering beforeCompletion synchronization
+… o.s.orm.jpa.JpaTransactionManager        : Initiating transaction commit
+… o.s.orm.jpa.JpaTransactionManager        : Committing JPA transaction on EntityManager [SessionImpl(820117866<open>)]
+… o.s.orm.jpa.JpaTransactionManager        : Triggering afterCommit synchronization
+… o.s.orm.jpa.JpaTransactionManager        : Triggering afterCompletion synchronization
+… derListeners$ConfigurableTxEventListener : Received Order.OrderCompleted(order=Order(super=Aggregate(id=28985ff2-1218-48f3-8386-8e8a72536feb, isNew=false), status=COMPLETED)). <2>
+… o.s.t.s.TransactionSynchronizationUtils  : TransactionSynchronization.afterCompletion threw exception
+
+java.lang.IllegalStateException: Error!
+  at example.spring.events.c.transactions.OrderListeners$ConfigurableTxEventListener.on(OrderListeners.java:63) ~[classes/:na]
+  …
+
+… c.t.OrderListeners$TransactionalListener : Received Order.OrderCompleted(order=Order(super=Aggregate(id=28985ff2-1218-48f3-8386-8e8a72536feb, isNew=false), status=COMPLETED)). <3>
+… o.s.orm.jpa.JpaTransactionManager        : Closing JPA EntityManager [SessionImpl(820117866<open>)] after transaction
+----
+<1> Standard event listeners succeed.
+<2> `ConfigurableTxListener` fails -> event is lost 😱.
+<3> `TransactionalListener` succeeds.
+
+Back to slides
+
+=== Moduliths domain events
+
+* Add Spring Domain Events dependency in `pom.xml`.
+* Execute `registersEventPublicationInCaseOfListenerFailure()`.
+
+[source]
+----
+… o.s.orm.jpa.JpaTransactionManager        : Creating new transaction with name [example.spring.events.c.transactions.OrderManagement.completeOrder]: PROPAGATION_REQUIRED,ISOLATION_DEFAULT
+… o.s.orm.jpa.JpaTransactionManager        : Participating in existing transaction
+… o.s.e.jpa.JpaEventPublicationRegistry    : Registering publication of class example.spring.events.c.transactions.Order$OrderCompleted with id 7c5d853b-81e2-4d33-b5f4-c2788887e381 for example.spring.events.c.transactions.OrderListeners$ConfigurableTxEventListener.on(class example.spring.events.c.transactions.Order$OrderCompleted). <1>
+… o.s.e.jpa.JpaEventPublicationRegistry    : Registering publication of class example.spring.events.c.transactions.Order$OrderCompleted with id bc496eaa-a503-46a4-8455-791f944fa9d1 for example.spring.events.c.transactions.OrderListeners$TransactionalListener.on(class example.spring.events.c.transactions.Order$OrderCompleted).
+… s.e.c.t.OrderListeners$AnnotatedListener : Received Order.OrderCompleted(order=Order(super=Aggregate(id=2ca2d4a5-ad38-48f4-bf81-71042152f6fd, isNew=false), status=COMPLETED)). <2>
+… OrderListeners$ConfigurableEventListener : Received Order.OrderCompleted(order=Order(super=Aggregate(id=3b40af63-d691-40ac-b1d7-58110cadd59b, isNew=false), status=COMPLETED)).
+… o.s.orm.jpa.JpaTransactionManager        : Triggering beforeCommit synchronization
+… o.s.orm.jpa.JpaTransactionManager        : Triggering beforeCompletion synchronization
+… o.s.orm.jpa.JpaTransactionManager        : Initiating transaction commit
+… o.s.orm.jpa.JpaTransactionManager        : Committing JPA transaction on EntityManager [SessionImpl(1680628659<open>)]
+Hibernate: insert into my_order (status, id) values (?, ?) <3>
+Hibernate: insert into jpa_event_publication (completion_date, event_type, listener_id, publication_date, serialized_event, id) values (?, ?, ?, ?, ?, ?)
+Hibernate: insert into jpa_event_publication (completion_date, event_type, listener_id, publication_date, serialized_event, id) values (?, ?, ?, ?, ?, ?)
+… o.s.orm.jpa.JpaTransactionManager        : Triggering afterCommit synchronization
+… o.s.orm.jpa.JpaTransactionManager        : Triggering afterCompletion synchronization
+
+… derListeners$ConfigurableTxEventListener : Received Order.OrderCompleted(order=Order(super=Aggregate(id=2ca2d4a5-ad38-48f4-bf81-71042152f6fd, isNew=false), status=COMPLETED)). <4>
+… .s.PersistentApplicationEventMulticaster : Failure during transaction event processing of org.springframework.context.PayloadApplicationEvent[source=org.springframework.context.annotation.AnnotationConfigApplicationContext@3d08f3f5, started on Mon Aug 31 13:01:06 CEST 2020] for listener example.spring.events.c.transactions.OrderListeners$ConfigurableTxEventListener.on(class example.spring.events.c.transactions.Order$OrderCompleted). Error!
+
+… c.t.OrderListeners$TransactionalListener : Received Order.OrderCompleted(order=Order(super=Aggregate(id=2ca2d4a5-ad38-48f4-bf81-71042152f6fd, isNew=false), status=COMPLETED)).
+… o.s.orm.jpa.JpaTransactionManager        : Suspending current transaction, creating new transaction with name [org.springframework.events.jpa.JpaEventPublicationRegistry.markCompleted]
+… o.s.orm.jpa.JpaTransactionManager        : Opened new EntityManager [SessionImpl(157316544<open>)] for JPA transaction
+Hibernate: select jpaeventpu0_.id as id1_0_, jpaeventpu0_.completion_date as completi2_0_, jpaeventpu0_.event_type as event_ty3_0_, jpaeventpu0_.listener_id as listener4_0_, jpaeventpu0_.publication_date as publicat5_0_, jpaeventpu0_.serialized_event as serializ6_0_ from jpa_event_publication jpaeventpu0_ where jpaeventpu0_.serialized_event=? and jpaeventpu0_.listener_id=?
+… o.s.e.jpa.JpaEventPublicationRegistry    : Marking publication of event class example.spring.events.c.transactions.Order$OrderCompleted with id bc496eaa-a503-46a4-8455-791f944fa9d1 to listener example.spring.events.c.transactions.OrderListeners$TransactionalListener.on(class example.spring.events.c.transactions.Order$OrderCompleted) completed. <5>
+… o.s.orm.jpa.JpaTransactionManager        : Participating in existing transaction
+Hibernate: update jpa_event_publication set completion_date=?, event_type=?, listener_id=?, publication_date=?, serialized_event=? where id=?
+… o.s.orm.jpa.JpaTransactionManager        : Committing JPA transaction on EntityManager [SessionImpl(157316544<open>)]
+… o.s.orm.jpa.JpaTransactionManager        : Closing JPA EntityManager [SessionImpl(157316544<open>)] after transaction
+
+… o.s.orm.jpa.JpaTransactionManager        : Resuming suspended transaction after completion of inner transaction
+… o.s.orm.jpa.JpaTransactionManager        : Closing JPA EntityManager [SessionImpl(1680628659<open>)] after transaction
+
+Hibernate: select jpaeventpu0_.id as id1_0_, jpaeventpu0_.completion_date as completi2_0_, jpaeventpu0_.event_type as event_ty3_0_, jpaeventpu0_.listener_id as listener4_0_, jpaeventpu0_.publication_date as publicat5_0_, jpaeventpu0_.serialized_event as serializ6_0_ from jpa_event_publication jpaeventpu0_ where jpaeventpu0_.completion_date is null
+… o.s.e.jpa.JpaEventPublicationRegistry    : Shutting down with the following publications left unfinished: <6>
+… o.s.e.jpa.JpaEventPublicationRegistry    :    7c5d853b-81e2-4d33-b5f4-c2788887e381 - example.spring.events.c.transactions.Order$OrderCompleted - example.spring.events.c.transactions.OrderListeners$ConfigurableTxEventListener.on(class example.spring.events.c.transactions.Order$OrderCompleted)
+----
+<1> `OrderCompleted` event triggered causes registration of event publications for every transactional event listener interested in the given event type.
+<2> `@EventListener` triggered synchronously.
+<3> Event publications written to the database alongside other business changes within the same transaction.
+<4> `ConfigurableTxEventListener` fails. Publication is not resolved.
+<5> `TransactionalListener` succeeds. Publication is marked as completed.
+<6> Application shuts down with one publication left incomplete. Incomplete publications can be republished on application restart or periodically retried.
+
+[[architecture]]
+== Architectural impact
+
+* Slides
+
+=== Before
+
+[plantuml, svg]
+----
+package orders {
+
+  class OrderManagement {
+    - inventory : Inventory 
+    + @Transactional complete(Order) : void
+  }
+
+  interface OrderRepository {
+    + save(Order) : Order
+  }
+}
+
+package inventory {
+  class Inventory {
+    + updateInventoryFor(Order) : void
+}
+
+OrderManagement -down-> OrderRepository
+OrderManagement -right-> Inventory
+----
+
+* `Inventory` is a bean dependency of `OrderManagement` and `complete(Order)` actively invokes it to issue the inventory update.
+** Creates a cyclic dependency.
+** Dependency needs to be available on execution.
+** Test usually use mocks and verify interaction.
+** Becomes more complicated as the `complete(…)` method has gravity for business functionality (sending emails, rewards program) and is likely to become a center of complexity.
+** How to integrate functionality that requires the transaction to be committed already, like sending confirmation emails?
+
+
+=== After
+
+[plantuml, svg]
+----
+package orders {
+
+  class OrderManagement {
+    + @Transactional complete(Order) : void
+  }
+
+  interface OrderRepository {
+    + save(Order) : Order
+  }
+}
+
+package inventory {
+  class Inventory {
+    - updateInventoryFor(Order) : void
+    ~ @EventListener on(OrderCompleted)
+}
+
+OrderManagement -down-> OrderRepository
+----
+
+* Instead of referring to `Inventory` by bean, `OrderManagement` -- or even more precise `Order` -- publishes an `OrderCompleted` event.
+This removes the need for the presence of the `Inventory` bean when executing `complete(…)`.
+* Testing changes from verifying on the interaction of the involved Spring beans but rather on asserting of events being published (on the order side) and event consumption triggering state changes (on the inventory side).
+* Different integration options:
+** Synchronous, in transaction and post transaction.
+** Asynchronous post transaction.
+ 
