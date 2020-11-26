@@ -23,7 +23,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -47,7 +47,7 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
@@ -58,15 +58,15 @@
 
 	<repositories>
 		<repository>
-			<id>spring-libs-snapshot</id>
-			<url>https://repo.spring.io/lib-snapshot</url>
+			<id>spring-snapshots</id>
+			<url>https://repo.spring.io/snapshot</url>
 		</repository>
 	</repositories>
 
 	<pluginRepositories>
 		<pluginRepository>
-			<id>spring-libs-snapshot</id>
-			<url>https://repo.spring.io/plugin-snapshot</url>
+			<id>spring-snapshots</id>
+			<url>https://repo.spring.io/snapshot</url>
 		</pluginRepository>
 	</pluginRepositories>
 
