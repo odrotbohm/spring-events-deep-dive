@@ -34,7 +34,7 @@ class OrderManagement {
 	private final OrderRepository orders;
 	private final ApplicationEventPublisher publisher;
 
-	public void completeOrder(Order order) {
+	void completeOrder(Order order) {
 
 		publisher.publishEvent(new SomeOtherEvent());
 

@@ -33,7 +33,7 @@ import org.springframework.core.Ordered;
 public class LoggingConfiguration {
 
 	@Bean
-	CustomizableTraceInterceptor interceptor() {
+	static CustomizableTraceInterceptor interceptor() {
 
 		var interceptor = new CustomizableTraceInterceptor();
 		interceptor.setEnterMessage("Entering $[methodName]($[arguments]).");
@@ -44,7 +44,7 @@ public class LoggingConfiguration {
 	}
 
 	@Bean
-	Advisor traceAdvisor() {
+	static Advisor traceAdvisor() {
 
 		var pointcut = new AspectJExpressionPointcut();
 		pointcut.setExpression("bean(orderManagement)");

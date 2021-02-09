@@ -30,7 +30,7 @@ class OrderManagement {
 
 	private final OrderRepository orders;
 
-	public void completeOrder(Order order) {
+	void completeOrder(Order order) {
 
 		log.info("Completing order {}.", order);
 

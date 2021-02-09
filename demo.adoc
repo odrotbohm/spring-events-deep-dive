@@ -4,8 +4,11 @@
 [[fundamentals]]
 == Fundamentals
 
-=== Successful execution
+=== Demo 1 -- ApplicationEventPublisher API
 
+==== Successful execution 
+
+* Show `a.fundamentals.quickstart.OrderManagament` and `….OrderListeners`.
 * Execute `publishesEventOnCompletion()`.
 
 [source]
@@ -23,7 +26,7 @@
 <4> Other events triggered synchronously.
 <5> Business method completed.
 
-=== Exception during execution
+==== Exception during execution
 
 [source]
 ----
@@ -35,12 +38,21 @@
 <1> Business method entered.
 <2> Some event triggered.
 <3> Exception interrupts method execution.
-<4> Business method completes with exception. No further events triggered. 
+<4> Business method completes with exception. No further events triggered.
+
+=== Demo 2 -- Spring Data domain event support
+
+* Show how `….a.fundamentals.springdata.Ordermanagement` looks different.
+** No dependencies to framework APIs
+** Event "publication" tied to the aggregate and repository interaction.
+* Execute `publishesEventOnCompletion()` to show events being published.
 
 [[transactions]]
 == Transactional event listeners
 
-=== Successful service execution (Part I -- transaction commits)
+=== Demo 3 -- Transactional event listeners
+
+==== Successful service execution (Part I -- transaction commits)
 
 * Execute `publishesEventOnCompletion()`.
 
@@ -54,7 +66,7 @@
 <1> Standard `@EventListener` fired.
 <2> ``@TransactionalEventListener``s fired.
 
-=== Successful service execution (Part II -- transaction commits)
+==== Successful service execution (Part II -- transaction commits)
 
 * Enable transaction logging in `application.properties`.
 * Execute `publishesEventOnCompletion()`.
@@ -79,7 +91,7 @@
 <2> Transaction commits.
 <3> ``@TransactionalEventListener``s fired as part of the transaction's after completion callback.
 
-=== Failed service invocation (transaction rollback)
+==== Failed service invocation (transaction rollback)
 
 * Execute `doesNotInvokeTransactionalEventListenerOnError()`.
 
@@ -100,7 +112,7 @@
 <2> Transaction rollback triggered.
 <3> No transactional event listeners triggered.
 
-=== Failing event listener
+==== Failing event listener
 
 * Execute `eventListenerCanBreakTransaction()`.
 
@@ -122,7 +134,7 @@
 <1> `AnnotatedListener` completes successfully.
 <2> `ConfigurableEventListener` fails and causes transaction rollback.
 
-=== Failing transactional event listener
+==== Failing transactional event listener
 
 * Execute `registersEventPublicationInCaseOfListenerFailure()`.
 
@@ -155,9 +167,9 @@ java.lang.IllegalStateException: Error!
 
 Back to slides
 
-=== Moduliths domain events
+=== Demo 4 -- Moduliths domain events
 
-* Add Spring Domain Events dependency in `pom.xml`.
+* Add Moduliths Domain Events dependency in `pom.xml`.
 * Execute `registersEventPublicationInCaseOfListenerFailure()`.
 
 [source]
