@@ -1,12 +1,12 @@
 = Demo
-:toc: 
+:toc:
 
 [[fundamentals]]
 == Fundamentals
 
 === Demo 1 -- ApplicationEventPublisher API
 
-==== Successful execution 
+==== Successful execution
 
 * Show `a.fundamentals.quickstart.OrderManagament` and `….OrderListeners`.
 * Execute `publishesEventOnCompletion()`.
@@ -28,12 +28,14 @@
 
 ==== Exception during execution
 
+* `doesNotPublishFurtherEventsOnException()`
+
 [source]
 ----
 … o.s.a.i.CustomizableTraceInterceptor     : Entering completeOrder(example.spring.events.a.fundamentals.quickstart.Order@2704def5). <1>
 … e.a.f.q.OrderListeners$AnnotatedListener : Received example.spring.events.a.fundamentals.quickstart.OrderManagement$SomeOtherEvent@63a7781. <2>
 … e.s.e.a.f.quickstart.OrderManagement     : Completing order example.spring.events.a.fundamentals.quickstart.Order@6fe97296. <3>
-… o.s.a.i.CustomizableTraceInterceptor     : Exception thrown in method 'completeOrder' of class [example.spring.events.a.fundamentals.quickstart.OrderManagement] <4> 
+… o.s.a.i.CustomizableTraceInterceptor     : Exception thrown in method 'completeOrder' of class [example.spring.events.a.fundamentals.quickstart.OrderManagement] <4>
 ----
 <1> Business method entered.
 <2> Some event triggered.
@@ -229,7 +231,7 @@ Hibernate: select jpaeventpu0_.id as id1_0_, jpaeventpu0_.completion_date as com
 package orders {
 
   class OrderManagement {
-    - inventory : Inventory 
+    - inventory : Inventory
     + @Transactional complete(Order) : void
   }
 
@@ -285,4 +287,3 @@ This removes the need for the presence of the `Inventory` bean when executing `c
 * Different integration options:
 ** Synchronous, in transaction and post transaction.
 ** Asynchronous post transaction.
- 
