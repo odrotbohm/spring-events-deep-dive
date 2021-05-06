@@ -17,7 +17,6 @@ package example.spring.events.a.fundamentals.springdata;
 
 import example.spring.events.util.Aggregate;
 import lombok.ToString;
-import lombok.Value;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -45,8 +44,5 @@ class Order extends Aggregate<Order> {
 		OPEN, COMPLETED;
 	}
 
-	@Value
-	static class OrderCompleted {
-		Order order;
-	}
+	record OrderCompleted(Order order) {}
 }

@@ -34,7 +34,7 @@ public class Inventory {
 
 	@EventListener
 	void on(OrderCompleted event) {
-		updateInventoryFor(event.getOrder());
+		updateInventoryFor(event.order());
 	}
 
 	public void updateInventoryFor(Order order) {

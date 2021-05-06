@@ -57,5 +57,5 @@ class OrderManagement {
 		}
 	}
 
-	static class SomeOtherEvent {}
+	record SomeOtherEvent() {}
 }

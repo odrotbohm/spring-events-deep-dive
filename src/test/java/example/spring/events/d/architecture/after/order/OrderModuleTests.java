@@ -41,7 +41,7 @@ class OrderModuleTests {
 		orders.completeOrder(order);
 
 		var fired = events.ofType(OrderCompleted.class)
-				.matching(it -> it.getOrder().equals(order));
+				.matching(it -> it.order().equals(order));
 
 		assertThat(fired).isNotEmpty();
 	}

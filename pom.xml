@@ -14,7 +14,7 @@
 	</parent>
 
 	<properties>
-		<java.version>15</java.version>
+		<java.version>16</java.version>
 		<moduliths.version>1.1.0-SNAPSHOT</moduliths.version>
 	</properties>
 

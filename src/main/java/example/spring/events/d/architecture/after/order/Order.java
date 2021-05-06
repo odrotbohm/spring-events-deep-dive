@@ -17,7 +17,6 @@ package example.spring.events.d.architecture.after.order;
 
 import example.spring.events.util.Aggregate;
 import lombok.ToString;
-import lombok.Value;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -45,8 +44,5 @@ public class Order extends Aggregate<Order> {
 		OPEN, COMPLETED;
 	}
 
-	@Value
-	public static class OrderCompleted {
-		Order order;
-	}
+	public record OrderCompleted(Order order) {}
 }
