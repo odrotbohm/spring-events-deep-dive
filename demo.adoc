@@ -14,7 +14,7 @@
 [source]
 ----
 … o.s.a.i.CustomizableTraceInterceptor     : Entering completeOrder(example.spring.events.a.fundamentals.quickstart.Order@84cd6c00). <1>
-2020-09-02 17:16:39.550  INFO 3812 --- [           main] e.a.f.q.OrderListeners$AnnotatedListener : Received example.spring.events.a.fundamentals.quickstart.OrderManagement$SomeOtherEvent@6736f40f. <2>
+… e.a.f.q.OrderListeners$AnnotatedListener : Received example.spring.events.a.fundamentals.quickstart.OrderManagement$SomeOtherEvent@6736f40f. <2>
 … e.s.e.a.f.quickstart.OrderManagement     : Completing order example.spring.events.a.fundamentals.quickstart.Order@dcf3ded4. <3>
 … e.a.f.q.OrderListeners$AnnotatedListener : Received example.spring.events.a.fundamentals.quickstart.OrderManagement$OrderCompleted[source=example.spring.events.a.fundamentals.quickstart.Order@dcf3ded4]. <4>
 … .f.q.OrderListeners$ImplementingListener : Received example.spring.events.a.fundamentals.quickstart.OrderManagement$OrderCompleted[source=example.spring.events.a.fundamentals.quickstart.Order@dcf3ded4].
