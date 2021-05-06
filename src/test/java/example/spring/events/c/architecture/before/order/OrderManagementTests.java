@@ -31,13 +31,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class OrderManagementTests {
 
-	@InjectMocks
-	OrderManagement orders;
+	@InjectMocks OrderManagement orders;
 
-	@Mock
-	Inventory inventory;
-	@Mock
-	OrderRepository repository;
+	@Mock Inventory inventory;
+	@Mock OrderRepository repository;
 
 	@Test
 	void invokesInventoryOnCompletion() {

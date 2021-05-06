@@ -27,7 +27,5 @@ import org.springframework.context.annotation.Import;
 @Import(LoggingConfiguration.class)
 class Application {
 
-	public static void main(String... args) {
-
-	}
+	public static void main(String... args) {}
 }
