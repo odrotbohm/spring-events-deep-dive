@@ -18,31 +18,39 @@ package example.spring.events.a.fundamentals.quickstart;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import example.spring.events.a.fundamentals.quickstart.OrderManagement.OrderCompleted;
+import example.spring.events.a.fundamentals.quickstart.OrderManagement.SomeOtherEvent;
 import example.spring.events.util.IntegrationTest;
 import lombok.RequiredArgsConstructor;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.event.ApplicationEvents;
+import org.springframework.test.context.event.RecordApplicationEvents;
 
 /**
  * @author Oliver Drotbohm
  */
 @IntegrationTest
+@RecordApplicationEvents
 @RequiredArgsConstructor
 class OrderEventPublicationTests {
 
 	private final OrderManagement orders;
 
-	@MockBean
-	OrderRepository repository;
+	@MockBean OrderRepository repository;
 
 	@Test
-	void publishesEventOnCompletion() {
+	void publishesEventOnCompletion(ApplicationEvents events) {
+
 		orders.completeOrder(new Order());
+
+		assertThat(events.stream(SomeOtherEvent.class)).hasSize(1);
+		assertThat(events.stream(OrderCompleted.class)).hasSize(1);
 	}
 
 	@Test
-	void doesNotPublishFurtherEventsOnException() {
+	void doesNotPublishFurtherEventsOnException(ApplicationEvents events) {
 
 		var order = new Order();
 
@@ -50,5 +58,8 @@ class OrderEventPublicationTests {
 
 		assertThatExceptionOfType(RuntimeException.class)
 				.isThrownBy(() -> orders.completeOrder(order));
+
+		assertThat(events.stream(SomeOtherEvent.class)).hasSize(1);
+		assertThat(events.stream(OrderCompleted.class)).hasSize(0);
 	}
 }

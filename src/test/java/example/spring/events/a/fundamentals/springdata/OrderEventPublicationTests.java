@@ -17,24 +17,30 @@ package example.spring.events.a.fundamentals.springdata;
 
 import static org.assertj.core.api.Assertions.*;
 
+import example.spring.events.a.fundamentals.springdata.Order.OrderCompleted;
 import example.spring.events.util.IntegrationTest;
 import lombok.RequiredArgsConstructor;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.event.ApplicationEvents;
+import org.springframework.test.context.event.RecordApplicationEvents;
 
 /**
  * @author Oliver Drotbohm
  */
 @IntegrationTest
+@RecordApplicationEvents
 @RequiredArgsConstructor
 class OrderEventPublicationTests {
 
 	private final OrderManagement orders;
 
 	@Test
-	void publishesEventOnCompletion() {
+	void publishesEventOnCompletion(ApplicationEvents events) {
 
 		assertThatCode(() -> orders.completeOrder(new Order()))
 				.doesNotThrowAnyException();
+
+		assertThat(events.stream(OrderCompleted.class)).hasSize(1);
 	}
 }
